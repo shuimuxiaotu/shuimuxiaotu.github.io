@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>吕氏春秋</title>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "PingFang SC", "Microsoft YaHei", "Songti SC", serif;
+  }
+
+  :root {
+    --bronze-dark: #253430;
+    --bronze-green: #36524a;
+    --bronze-light: #6f8f83;
+    --rice-white: #f4efe3;
+    --rice-soft: #ece4d1;
+    --ink: #1f2421;
+    --gold: #c7a96a;
+    --gold-soft: #e4d29a;
+    --danger: #b5513b;
+  }
+
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(199, 169, 106, 0.18), transparent 45%),
+      radial-gradient(circle at 80% 100%, rgba(54, 82, 74, 0.35), transparent 55%),
+      linear-gradient(180deg, #15201e 0%, #1c2a27 45%, #243531 100%);
+    color: var(--rice-white);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 18px 40px;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(244, 239, 227, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(244, 239, 227, 0.05) 1px, transparent 1px);
+    background-size: 44px 44px;
+    pointer-events: none;
+    opacity: 0.35;
+  }
+
+  .title-wrap {
+    text-align: center;
+    margin-bottom: 18px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .main-title {
+    font-family: "STKaiti", "KaiTi", "楷体", serif;
+    font-size: 44px;
+    letter-spacing: 14px;
+    padding-left: 14px;
+    color: var(--gold-soft);
+    text-shadow:
+      0 0 18px rgba(199, 169, 106, 0.45),
+      0 4px 14px rgba(0, 0, 0, 0.45);
+  }
+
+  .sub-title {
+    margin-top: 8px;
+    font-size: 14px;
+    letter-spacing: 6px;
+    color: var(--bronze-light);
+  }
+
+  .card {
+    width: min(560px, 92vw);
+    background: linear-gradient(180deg, rgba(244, 239, 227, 0.96), rgba(232, 224, 204, 0.96));
+    border: 2px solid rgba(199, 169, 106, 0.45);
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow:
+      0 30px 60px rgba(0, 0, 0, 0.35),
+      0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+    position: relative;
+    z-index: 1;
+  }
+
+  .card::before,
+  .card::after {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--gold);
+  }
+
+  .card::before {
+    top: 10px;
+    left: 10px;
+    border-right: none;
+    border-bottom: none;
+  }
+
+  .card::after {
+    bottom: 10px;
+    right: 10px;
+    border-left: none;
+    border-top: none;
+  }
+
+  .mode-box,
+  .diff-box {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  button {
+    border: none;
+    border-radius: 999px;
+    padding: 9px 16px;
+    font-size: 14px;
+    color: #fff;
+    background: linear-gradient(180deg, var(--bronze-green), var(--bronze-dark));
+    border: 1px solid rgba(199, 169, 106, 0.35);
+    cursor: pointer;
+    letter-spacing: 2px;
+    transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s ease;
+  }
+
+  button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+  }
+
+  button.secondary {
+    background: linear-gradient(180deg, #859b93, #4d675f);
+  }
+
+  button.active-btn {
+    background: linear-gradient(180deg, var(--gold), #a57f3c);
+    color: #2b2110;
+    box-shadow: 0 10px 24px rgba(199, 169, 106, 0.35);
+  }
+
+  .tip-text {
+    text-align: center;
+    font-size: 15px;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(199, 169, 106, 0.25);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    min-height: 44px;
+    letter-spacing: 2px;
+  }
+
+  .num-panel {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .num-btn {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background:
+      radial-gradient(circle at 30% 25%, #fff8e1, #e6d29a 55%, #b58a3c);
+    border: 2px solid rgba(120, 85, 20, 0.45);
+    color: #3b2a0b;
+    font-size: 26px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow:
+      inset 0 -6px 10px rgba(120, 85, 20, 0.25),
+      0 10px 22px rgba(0, 0, 0, 0.18);
+  }
+
+  .num-btn.active {
+    background:
+      radial-gradient(circle at 30% 25%, #fff3c4, #ffd36a 55%, #d69b2c);
+    border-color: #8f6518;
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 -6px 10px rgba(120, 85, 20, 0.25),
+      0 14px 28px rgba(214, 155, 44, 0.45);
+  }
+
+  .board-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 18px;
+  }
+
+  .board {
+    padding: 14px;
+    background:
+      repeating-linear-gradient(
+        90deg,
+        rgba(120, 85, 20, 0.08) 0 22px,
+        transparent 22px 44px
+      ),
+      linear-gradient(180deg, #f6ecd0, #e4d2a6);
+    border: 3px solid #6f5426;
+    border-radius: 18px;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.45),
+      0 20px 40px rgba(0, 0, 0, 0.25);
+  }
+
+  .row {
+    display: flex;
+  }
+
+  .cell {
+    width: 62px;
+    height: 62px;
+    border: 1px solid rgba(111, 84, 38, 0.35);
+    background: rgba(255, 255, 255, 0.45);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    color: var(--ink);
+    user-select: none;
+    border-radius: 10px;
+    margin: 2px;
+    transition: background 0.15s ease, transform 0.12s ease;
+  }
+
+  .cell.clickable {
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.75);
+    box-shadow: inset 0 0 0 1px rgba(199, 169, 106, 0.45);
+  }
+
+  .cell.clickable:hover {
+    background: rgba(255, 243, 196, 0.95);
+    transform: scale(1.04);
+  }
+
+  .cell.occupied {
+    background: radial-gradient(circle at 30% 25%, #fffbe8, #f1d98a 60%, #c89a3a);
+    color: #3b2a0b;
+    font-weight: 800;
+    box-shadow:
+      inset 0 -6px 10px rgba(120, 85, 20, 0.25),
+      0 8px 18px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(120, 85, 20, 0.45);
+  }
+
+  .restart-box {
+    display: flex;
+    justify-content: center;
+  }
+
+  .mask {
+    position: fixed;
+    inset: 0;
+    background: rgba(12, 20, 18, 0.72);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 50;
+  }
+
+  .popup {
+    width: min(420px, 86vw);
+    background: linear-gradient(180deg, #fbf4df, #e7d6a6);
+    border: 3px solid var(--gold);
+    border-radius: 22px;
+    padding: 32px 24px;
+    text-align: center;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+  }
+
+  .popup h2 {
+    font-family: "STKaiti", "KaiTi", "楷体", serif;
+    font-size: 30px;
+    color: var(--ink);
+    margin-bottom: 18px;
+    letter-spacing: 8px;
+  }
+
+  .popup p {
+    color: #4b3a1a;
+    margin-bottom: 22px;
+    letter-spacing: 2px;
+  }
+
+  .hide {
+    display: none !important;
+  }
+
+  @media (max-width: 480px) {
+    .main-title {
+      font-size: 34px;
+      letter-spacing: 10px;
+    }
+
+    .cell {
+      width: 54px;
+      height: 54px;
+      font-size: 22px;
+    }
+
+    .num-btn {
+      width: 56px;
+      height: 56px;
+      font-size: 24px;
+    }
+  }
+</style>
+</head>
+
+<body>
+  <div class="title-wrap">
+    <div class="main-title">吕氏春秋</div>
+    <div class="sub-title">十 五 连 线 棋</div>
+  </div>
+
+  <div class="card">
+    <div class="mode-box">
+      <button id="pvpBtn">双人对战</button>
+      <button id="aiBtn" class="secondary">人机对战</button>
+    </div>
+
+    <div class="diff-box">
+      <button id="easyBtn" class="secondary">简单</button>
+      <button id="normalBtn" class="active-btn">普通</button>
+      <button id="hardBtn" class="secondary">困难</button>
+    </div>
+
+    <div class="tip-text" id="tip">请选择游戏模式开始对局</div>
+
+    <div class="num-panel">
+      <button class="num-btn active" data-num="1">壹</button>
+      <button class="num-btn" data-num="2">贰</button>
+      <button class="num-btn" data-num="3">叁</button>
+      <button class="num-btn" data-num="4">肆</button>
+    </div>
+
+    <div class="board-wrap">
+      <div class="board" id="board"></div>
+    </div>
+
+    <div class="restart-box">
+      <button id="restartBtn">重新开局</button>
+    </div>
+  </div>
+
+  <div class="mask hide" id="popMask">
+    <div class="popup">
+      <h2 id="popTitle">对局终局</h2>
+      <p id="popText">游戏结束</p>
+      <button id="popRestartBtn">再来一局</button>
+    </div>
+  </div>
+
+<script>
+  let board = [];
+  let turnIndex = 0;
+  let gameOver = true;
+  let selectedNum = 1;
+  let aiMode = false;
+  let aiLevel = "normal";
+
+  const boardDom = document.getElementById("board");
+  const tipDom = document.getElementById("tip");
+  const popMask = document.getElementById("popMask");
+  const popTitle = document.getElementById("popTitle");
+  const popText = document.getElementById("popText");
+
+  function getAllLines() {
+    const lines = [];
+    for (let r = 0; r < 5; r++) {
+      const row = [];
+      for (let c = 0; c < 5; c++) row.push({ r, c });
+      lines.push(row);
+    }
+    for (let c = 0; c < 5; c++) {
+      const col = [];
+      for (let r = 0; r < 5; r++) col.push({ r, c });
+      lines.push(col);
+    }
+    lines.push([{ r: 0, c: 0 }, { r: 1, c: 1 }, { r: 2, c: 2 }, { r: 3, c: 3 }, { r: 4, c: 4 }]);
+    lines.push([{ r: 0, c: 4 }, { r: 1, c: 3 }, { r: 2, c: 2 }, { r: 3, c: 1 }, { r: 4, c: 0 }]);
+    return lines;
+  }
+
+  function checkWin(bd) {
+    const lines = getAllLines();
+    for (const line of lines) {
+      let sum = 0;
+      for (const p of line) sum += bd[p.r][p.c];
+      if (sum === 15) return true;
+    }
+    return false;
+  }
+
+  function cloneBoard(b) {
+    return b.map(row => [...row]);
+  }
+
+  function evaluateBoard(bd) {
+    let score = 0;
+    const lines = getAllLines();
+    for (const line of lines) {
+      let sum = 0;
+      let blanks = 0;
+      for (const p of line) {
+        const v = bd[p.r][p.c];
+        if (v === 0) {
+          blanks++;
+        } else {
+          sum += v;
+        }
+      }
+      const need = 15 - sum;
+      if (need < 0) continue;
+      if (need >= blanks && need <= blanks * 4) {
+        score += (6 - blanks) * (6 - blanks);
+      }
+    }
+    return score;
+  }
+
+  function minimax(boardState, depth, alpha, beta, maximizing) {
+    if (depth === 0) {
+      return evaluateBoard(boardState);
+    }
+    const empties = getEmptyCells(boardState);
+    if (empties.length === 0) {
+      return evaluateBoard(boardState);
+    }
+
+    if (maximizing) {
+      let best = -Infinity;
+      for (const pos of empties) {
+        for (let val = 1; val <= 4; val++) {
+          const nb = cloneBoard(boardState);
+          nb[pos.r][pos.c] = val;
+          if (checkWin(nb)) {
+            return 100000;
+          }
+          const score = minimax(nb, depth - 1, alpha, beta, false);
+          best = Math.max(best, score);
+          alpha = Math.max(alpha, score);
+          if (beta <= alpha) break;
+        }
+      }
+      return best;
+    } else {
+      let best = Infinity;
+      for (const pos of empties) {
+        for (let val = 1; val <= 4; val++) {
+          const nb = cloneBoard(boardState);
+          nb[pos.r][pos.c] = val;
+          if (checkWin(nb)) {
+            return -100000;
+          }
+          const score = minimax(nb, depth - 1, alpha, beta, true);
+          best = Math.min(best, score);
+          beta = Math.min(beta, score);
+          if (beta <= alpha) break;
+        }
+      }
+      return best;
+    }
+  }
+
+  function minimaxRoot(boardState, depth) {
+    let bestScore = -Infinity;
+    let bestMove = null;
+    const empties = getEmptyCells(boardState);
+    for (const pos of empties) {
+      for (let val = 1; val <= 4; val++) {
+        const nb = cloneBoard(boardState);
+        nb[pos.r][pos.c] = val;
+        let score;
+        if (checkWin(nb)) {
+          score = 100000;
+        } else {
+          score = minimax(nb, depth - 1, -Infinity, Infinity, false);
+        }
+        if (score > bestScore) {
+          bestScore = score;
+          bestMove = {
+            r: pos.r,
+            c: pos.c,
+            val: val
+          };
+        }
+      }
+    }
+    return bestMove;
+  }
+
+  function getEmptyCells(bd) {
+    const arr = [];
+    for (let r = 0; r < 5; r++)
+      for (let c = 0; c < 5; c++)
+        if (bd[r][c] === 0) arr.push({ r, c });
+    return arr;
+  }
+
+  function findWinMove(bd) {
+    const empties = getEmptyCells(bd);
+    for (const pos of empties) {
+      for (let val = 1; val <= 4; val++) {
+        const nb = cloneBoard(bd);
+        nb[pos.r][pos.c] = val;
+        if (checkWin(nb)) {
+          return { pos, val };
+        }
+      }
+    }
+    return null;
+  }
+
+  function isFull() {
+    return getEmptyCells(board).length === 0;
+  }
+
+  function isPlayerTurnNow() {
+    if (gameOver) return false;
+    if (!aiMode) return true;
+    return turnIndex === 0;
+  }
+
+  function initBoard() {
+    board = Array.from({ length: 5 }, () => Array(5).fill(0));
+    renderBoard();
+  }
+
+  function renderBoard() {
+    boardDom.innerHTML = "";
+    for (let r = 0; r < 5; r++) {
+      const rowDiv = document.createElement("div");
+      rowDiv.className = "row";
+      for (let c = 0; c < 5; c++) {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        if (board[r][c] !== 0) {
+          cell.classList.add("occupied");
+          cell.textContent = board[r][c];
+        } else if (isPlayerTurnNow()) {
+          cell.classList.add("clickable");
+          cell.addEventListener("click", () => playerPlace(r, c));
+        }
+        rowDiv.appendChild(cell);
+      }
+      boardDom.appendChild(rowDiv);
+    }
+  }
+
+  function playerPlace(r, c) {
+    if (!isPlayerTurnNow()) return;
+    if (board[r][c] !== 0) return;
+    board[r][c] = selectedNum;
+    afterPlace();
+  }
+
+  function afterPlace() {
+    if (checkWin(board)) {
+      gameOver = true;
+      renderBoard();
+      popTitle.textContent = "终局";
+      if (aiMode) {
+        popText.textContent = turnIndex === 0 ? "玩家推演得胜" : "吕氏春秋 AI 得胜";
+      } else {
+        popText.textContent = turnIndex === 0 ? "先手得胜" : "后手得胜";
+      }
+      popMask.classList.remove("hide");
+      return;
+    }
+
+    if (isFull()) {
+      gameOver = true;
+      renderBoard();
+      popTitle.textContent = "终局";
+      popText.textContent = "棋局已满，和局";
+      popMask.classList.remove("hide");
+      return;
+    }
+
+    turnIndex = 1 - turnIndex;
+    renderBoard();
+
+    if (aiMode && turnIndex === 1 && !gameOver) {
+      tipDom.textContent = "AI 推演中，请稍候";
+      setTimeout(aiMove, 700);
+    } else if (aiMode) {
+      tipDom.textContent = "请选择数字落子";
+    } else {
+      tipDom.textContent = turnIndex === 0 ? "先手行动" : "后手行动";
+    }
+  }
+
+  function aiMove() {
+    if (gameOver) return;
+    let pickPos = null;
+    let pickVal = 3;
+    const empties = getEmptyCells(board);
+    if (empties.length === 0) return;
+
+    if (aiLevel === "easy") {
+      pickPos = empties[Math.floor(Math.random() * empties.length)];
+      pickVal = [1, 2, 3, 4][Math.floor(Math.random() * 4)];
+      if (Math.random() < 0.35) {
+        const threat = findWinMove(board);
+        if (threat) {
+          pickPos = threat.pos;
+          pickVal = threat.val > 2 ? 1 : 4;
+        }
+      }
+    } else if (aiLevel === "normal") {
+      const aiWin = findWinMove(board);
+      if (aiWin) {
+        pickPos = aiWin.pos;
+        pickVal = aiWin.val;
+      } else {
+        const plyWin = findWinMove(board);
+        if (plyWin) {
+          pickPos = plyWin.pos;
+          pickVal = plyWin.val > 2 ? 1 : 4;
+        } else {
+          const score = new Map();
+          empties.forEach(p => score.set(`${p.r},${p.c}`, 0));
+          const lines = getAllLines();
+          for (const ln of lines) {
+            let sum = 0, blank = [];
+            ln.forEach(p => {
+              const v = board[p.r][p.c];
+              v ? sum += v : blank.push(p);
+            });
+            const nd = 15 - sum;
+            const k = blank.length;
+            if (nd >= k && nd <= 4 * k) {
+              const w = 7 - k;
+              blank.forEach(p => score.set(`${p.r},${p.c}`, score.get(`${p.r},${p.c}`) + w));
+            }
+          }
+          empties.sort((a, b) => score.get(`${b.r},${b.c}`) - score.get(`${a.r},${a.c}`));
+          pickPos = empties[0];
+          pickVal = 3;
+        }
+      }
+    } else if (aiLevel === "hard") {
+      if (board[2][2] === 0) {
+        pickPos = { r: 2, c: 2 };
+        pickVal = 3;
+      } else {
+        const best = minimaxRoot(board, 3);
+        pickPos = { r: best.r, c: best.c };
+        pickVal = best.val;
+      }
+    }
+
+    board[pickPos.r][pickPos.c] = pickVal;
+    afterPlace();
+  }
+
+  function restartGame() {
+    popMask.classList.add("hide");
+    initBoard();
+    gameOver = false;
+    turnIndex = 0;
+
+    if (aiMode) {
+      tipDom.textContent = "人机对战 · 请先手落子";
+    } else {
+      tipDom.textContent = "双人对战 · 先手行动";
+    }
+
+    renderBoard();
+  }
+
+  function bindEvents() {
+    document.querySelectorAll(".num-btn").forEach(btn => {
+      btn.addEventListener("click", function () {
+        document.querySelectorAll(".num-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        selectedNum = Number(btn.dataset.num);
+      });
+    });
+
+    document.getElementById("pvpBtn").addEventListener("click", function () {
+      aiMode = false;
+      restartGame();
+    });
+
+    document.getElementById("aiBtn").addEventListener("click", function () {
+      aiMode = true;
+      restartGame();
+    });
+
+    document.getElementById("easyBtn").addEventListener("click", function () {
+      aiLevel = "easy";
+      document.querySelectorAll(".diff-box button").forEach(b => b.classList.remove("active-btn"));
+      document.getElementById("easyBtn").classList.add("active-btn");
+      tipDom.textContent = "已切换：简单 · 请重新开局";
+    });
+
+    document.getElementById("normalBtn").addEventListener("click", function () {
+      aiLevel = "normal";
+      document.querySelectorAll(".diff-box button").forEach(b => b.classList.remove("active-btn"));
+      document.getElementById("normalBtn").classList.add("active-btn");
+      tipDom.textContent = "已切换：普通 · 请重新开局";
+    });
+
+    document.getElementById("hardBtn").addEventListener("click", function () {
+      aiLevel = "hard";
+      document.querySelectorAll(".diff-box button").forEach(b => b.classList.remove("active-btn"));
+      document.getElementById("hardBtn").classList.add("active-btn");
+      tipDom.textContent = "已切换：困难 · 请重新开局";
+    });
+
+    document.getElementById("restartBtn").addEventListener("click", restartGame);
+    document.getElementById("popRestartBtn").addEventListener("click", restartGame);
+  }
+
+  window.addEventListener("load", function () {
+    bindEvents();
+    initBoard();
+    tipDom.textContent = "请选择游戏模式开始对局";
+  });
+</script>
+</body>
+</html>
